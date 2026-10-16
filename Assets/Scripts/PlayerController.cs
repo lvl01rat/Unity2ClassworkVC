@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("References")]
     public Transform cameraTransform;
+    public Animator animator;
 
     //Private Variables
     CharacterController _controller;
@@ -36,7 +37,7 @@ public class PlayerController : MonoBehaviour
     {
         _controller = GetComponent<CharacterController>();
 
-        if(cameraTransform == null && Camera.main != null)
+        if (cameraTransform == null && Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
         }
@@ -62,6 +63,7 @@ public class PlayerController : MonoBehaviour
         HandleGroundCheck();
         HandleMovement();
         HandleJump();
+        UpdateAnimator();
         ApplyGravity();
     }
 
@@ -80,7 +82,7 @@ public class PlayerController : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
 
-        Vector3 moveDir = Quaternion.Euler(0f,targetAngle, 0f)  * Vector3.forward;//new Vector3(_moveInput.x, 0, _moveInput.y);
+        Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;//new Vector3(_moveInput.x, 0, _moveInput.y);
 
         _controller.Move(moveDir.normalized * speed * Time.deltaTime);
     }
@@ -99,7 +101,7 @@ public class PlayerController : MonoBehaviour
         _isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
         //Reset downward velocity when grounded;
-        if(_isGrounded && _velocity.y < 0f)
+        if (_isGrounded && _velocity.y < 0f)
         {
             _velocity.y = -2;
             _isJumping = false;
@@ -121,7 +123,16 @@ public class PlayerController : MonoBehaviour
     void ApplyGravity()
     {
         _velocity.y += gravity * Time.deltaTime;
-        _controller.Move(new Vector3(0f,_velocity.y, 0f)  * Time.deltaTime);
+        _controller.Move(new Vector3(0f, _velocity.y, 0f) * Time.deltaTime);
+    }
+
+    void UpdateAnimator()
+    {
+        if(animator == null) return;
+
+        float inputMagnitude = _moveInput.magnitude;
+        animator.SetFloat("Speed", inputMagnitude);
+        animator.SetBool("IsJumping", !_isGrounded);
     }
 
     private void OnDrawGizmos()
